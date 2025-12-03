@@ -7,16 +7,25 @@ This project is a .NET 8 console application implementing a Model Context Protoc
 ## Features
 
 - Provide connection string via environment variable `CONNECTION_STRING`.
+- **READONLY Mode**: Set `READONLY=true` to restrict to read-only operations.
 - **MCP Tools Implemented**:
   - ListTables: List all tables in the database.
   - DescribeTable: Get schema/details for a table.
   - CreateTable: Create new tables.
   - DropTable: Drop existing tables.
   - InsertData: Insert data into tables.
-  - ReadData: Read/query data from tables.
+  - ReadData: Read/query data from tables (with SQL injection protection).
   - UpdateData: Update values in tables.
+- **Security**: ReadData tool validates queries to prevent SQL injection and destructive operations.
 - **Logging**: Console logging using Microsoft.Extensions.Logging.
 - **Unit Tests**: xUnit-based unit tests for all major components.
+
+## Environment Variables
+
+| Variable | Required | Description |
+|----------|----------|-------------|
+| `CONNECTION_STRING` | Yes | SQL Server connection string |
+| `READONLY` | No | Set to `true` to disable write operations (CreateTable, DropTable, InsertData, UpdateData) |
 
 ## Getting Started
 
@@ -48,7 +57,8 @@ Add a new MCP Server with the following settings:
         "type": "stdio",
         "command": "C:\\src\\MssqlMcp\\MssqlMcp\\bin\\Debug\\net8.0\\MssqlMcp.exe",
         "env": {
-            "CONNECTION_STRING": "Server=.;Database=test;Trusted_Connection=True;TrustServerCertificate=True"
+            "CONNECTION_STRING": "Server=.;Database=test;Trusted_Connection=True;TrustServerCertificate=True",
+            "READONLY": "false"
             }
 }
 ```
@@ -66,7 +76,8 @@ e.g. your MCP settings should look like this if "MSSQL MCP" is your own MCP Serv
             "type": "stdio",
             "command": "C:\\src\\SQL-AI-samples\\MssqlMcp\\MssqlMcp\\bin\\Debug\\net8.0\\MssqlMcp.exe",
                 "env": {
-                "CONNECTION_STRING": "Server=.;Database=test;Trusted_Connection=True;TrustServerCertificate=True"
+                "CONNECTION_STRING": "Server=.;Database=test;Trusted_Connection=True;TrustServerCertificate=True",
+                "READONLY": "false"
             }
     }
 }
@@ -82,7 +93,8 @@ An example of using a connection string for Azure SQL Database:
             "type": "stdio",
             "command": "C:\\src\\SQL-AI-samples\\MssqlMcp\\MssqlMcp\\bin\\Debug\\net8.0\\MssqlMcp.exe",
                 "env": {
-                "CONNECTION_STRING": "Server=tcp:<servername>.database.windows.net,1433;Initial Catalog=<databasename>;Encrypt=Mandatory;TrustServerCertificate=False;Connection Timeout=30;Authentication=Active Directory Interactive"
+                "CONNECTION_STRING": "Server=tcp:<servername>.database.windows.net,1433;Initial Catalog=<databasename>;Encrypt=Mandatory;TrustServerCertificate=False;Connection Timeout=30;Authentication=Active Directory Interactive",
+                "READONLY": "true"
             }
     }
 }
@@ -113,7 +125,8 @@ Add a new MCP Server with the following settings:
         "MSSQL MCP": {
             "command": "C:\\src\\SQL-AI-samples\\MssqlMcp\\MssqlMcp\\bin\\Debug\\net8.0\\MssqlMcp.exe",
             "env": {
-                    "CONNECTION_STRING": "Server=.;Database=test;Trusted_Connection=True;TrustServerCertificate=True"
+                    "CONNECTION_STRING": "Server=.;Database=test;Trusted_Connection=True;TrustServerCertificate=True",
+                    "READONLY": "true"
                 }
         }
     }
@@ -122,6 +135,30 @@ Add a new MCP Server with the following settings:
 ---
 
 Save the file, start a new Chat, you'll see the "Tools" icon, it should list 7 MSSQL MCP tools.
+
+4. Claude Code: **Add MCP Server via CLI**
+
+```bash
+claude mcp add --transport stdio "MSSQL MCP" \
+  --env CONNECTION_STRING="Server=.;Database=test;Trusted_Connection=True;TrustServerCertificate=True" \
+  --env READONLY="true" \
+  -- "C:\path\to\MssqlMcp.exe"
+```
+
+# Security
+
+## READONLY Mode
+Set `READONLY=true` to prevent any data modification. When enabled:
+- `CreateTable`, `DropTable`, `InsertData`, and `UpdateData` tools return an error
+- Only `ListTables`, `DescribeTable`, and `ReadData` tools function normally
+
+## ReadData Query Validation
+The `ReadData` tool validates all queries to prevent SQL injection and destructive operations:
+- Queries must start with `SELECT`
+- Blocked keywords: `DELETE`, `DROP`, `UPDATE`, `INSERT`, `EXEC`, `TRUNCATE`, etc.
+- Blocked patterns: `SELECT INTO`, stored procedures (`sp_`, `xp_`), `OPENROWSET`, `WAITFOR`, etc.
+- Maximum query length: 10,000 characters
+- Maximum result set: 10,000 records
 
 # Troubleshooting
 

@@ -6,7 +6,7 @@ namespace Mssql.McpServer;
 /// <summary>
 /// Represents the result of a database operation, including success status, error message, number of rows affected, and any returned data.
 /// </summary>
-public class DbOperationResult(bool success, string? error = null, int? rowsAffected = null, object? data = null)
+public class DbOperationResult(bool success, string? error = null, int? rowsAffected = null, object? data = null, string? message = null)
 {
     /// <summary>
     /// Gets a value indicating whether the database operation was successful.
@@ -27,4 +27,9 @@ public class DbOperationResult(bool success, string? error = null, int? rowsAffe
     /// Gets any data returned by the operation, such as query results.
     /// </summary>
     public object? Data { get; } = data;
+
+    /// <summary>
+    /// Gets an informational message about the operation, such as result limiting.
+    /// </summary>
+    public string? Message { get; } = message;
 }

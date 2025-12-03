@@ -14,10 +14,18 @@ public partial class Tools
         ReadOnly = true,
         Idempotent = true,
         Destructive = false),
-        Description("Executes SQL queries against SQL Database to read data")]
+        Description("Executes a SELECT query on an SQL Database table. The query must start with SELECT and cannot contain any destructive SQL operations for security reasons.")]
     public async Task<DbOperationResult> ReadData(
-        [Description("SQL query to execute")] string sql)
+        [Description("SQL SELECT query to execute (must start with SELECT and cannot contain destructive operations)")] string sql)
     {
+        // Validate the query for security issues
+        var (isValid, validationError) = SqlQueryValidator.ValidateQuery(sql);
+        if (!isValid)
+        {
+            _logger.LogWarning("Security validation failed for query: {Query}", sql[..Math.Min(sql.Length, 100)]);
+            return new DbOperationResult(success: false, error: $"Security validation failed: {validationError}");
+        }
+
         var conn = await _connectionFactory.GetOpenConnectionAsync();
         try
         {
@@ -26,22 +34,37 @@ public partial class Tools
                 using var cmd = new SqlCommand(sql, conn);
                 using var reader = await cmd.ExecuteReaderAsync();
                 var results = new List<Dictionary<string, object?>>();
+                var totalRecords = 0;
                 while (await reader.ReadAsync())
                 {
-                    var row = new Dictionary<string, object?>();
-                    for (var i = 0; i < reader.FieldCount; i++)
+                    totalRecords++;
+                    // Limit results to prevent memory issues
+                    if (results.Count < SqlQueryValidator.MaxRecordCount)
                     {
-                        row[reader.GetName(i)] = reader.IsDBNull(i) ? null : reader.GetValue(i);
+                        var row = new Dictionary<string, object?>();
+                        for (var i = 0; i < reader.FieldCount; i++)
+                        {
+                            row[reader.GetName(i)] = reader.IsDBNull(i) ? null : reader.GetValue(i);
+                        }
+                        results.Add(row);
                     }
-                    results.Add(row);
                 }
-                return new DbOperationResult(success: true, data: results);
+
+                var message = totalRecords > SqlQueryValidator.MaxRecordCount
+                    ? $"Query returned {totalRecords:N0} records, limited to {SqlQueryValidator.MaxRecordCount:N0}"
+                    : null;
+
+                return new DbOperationResult(success: true, data: results, message: message);
             }
         }
         catch (Exception ex)
         {
             _logger.LogError(ex, "ReadData failed: {Message}", ex.Message);
-            return new DbOperationResult(success: false, error: ex.Message);
+            // Don't expose internal error details to prevent information leakage
+            var safeError = ex.Message.Contains("Invalid object name", StringComparison.OrdinalIgnoreCase)
+                ? ex.Message
+                : "Database query execution failed";
+            return new DbOperationResult(success: false, error: safeError);
         }
     }
 }
