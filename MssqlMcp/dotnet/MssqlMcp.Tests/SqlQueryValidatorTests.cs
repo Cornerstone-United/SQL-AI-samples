@@ -172,9 +172,16 @@ public class SqlQueryValidatorTests
     }
 
     [Fact]
-    public void MaxRecordCount_IsReasonableLimit()
+    public void MaxRecordCount_DefaultsTo100()
     {
-        Assert.Equal(10000, SqlQueryValidator.MaxRecordCount);
+        // Default is 100, can be overridden via MAX_RESULT_SET env var
+        Assert.Equal(SqlQueryValidator.DefaultMaxRecordCount, SqlQueryValidator.MaxRecordCount);
+    }
+
+    [Fact]
+    public void DefaultMaxRecordCount_Is100()
+    {
+        Assert.Equal(100, SqlQueryValidator.DefaultMaxRecordCount);
     }
 
     [Fact]

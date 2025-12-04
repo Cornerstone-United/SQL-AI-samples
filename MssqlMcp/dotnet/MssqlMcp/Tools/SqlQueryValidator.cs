@@ -12,7 +12,18 @@ namespace Mssql.McpServer;
 public static partial class SqlQueryValidator
 {
     public const int MaxQueryLength = 10000;
-    public const int MaxRecordCount = 10000;
+    public const int DefaultMaxRecordCount = 100;
+
+    /// <summary>
+    /// Gets the maximum number of records to return. Configured via MAX_RESULT_SET environment variable.
+    /// </summary>
+    public static int MaxRecordCount { get; } = GetMaxRecordCount();
+
+    private static int GetMaxRecordCount()
+    {
+        var envValue = Environment.GetEnvironmentVariable("MAX_RESULT_SET");
+        return int.TryParse(envValue, out var value) && value > 0 ? value : DefaultMaxRecordCount;
+    }
 
     /// <summary>
     /// Dangerous SQL keywords that should not be allowed in read-only queries.

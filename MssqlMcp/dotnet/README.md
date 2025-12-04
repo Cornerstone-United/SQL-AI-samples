@@ -22,10 +22,11 @@ This project is a .NET 8 console application implementing a Model Context Protoc
 
 ## Environment Variables
 
-| Variable | Required | Description |
-|----------|----------|-------------|
-| `CONNECTION_STRING` | Yes | SQL Server connection string |
-| `READONLY` | No | Set to `true` to disable write operations (CreateTable, DropTable, InsertData, UpdateData) |
+| Variable | Required | Default | Description |
+|----------|----------|---------|-------------|
+| `CONNECTION_STRING` | Yes | - | SQL Server connection string |
+| `READONLY` | No | `false` | Set to `true` to disable write operations (CreateTable, DropTable, InsertData, UpdateData) |
+| `MAX_RESULT_SET` | No | `100` | Maximum number of records returned by ReadData |
 
 ## Getting Started
 
@@ -142,6 +143,7 @@ Save the file, start a new Chat, you'll see the "Tools" icon, it should list 7 M
 claude mcp add --transport stdio "MSSQL MCP" \
   --env CONNECTION_STRING="Server=.;Database=test;Trusted_Connection=True;TrustServerCertificate=True" \
   --env READONLY="true" \
+  --env MAX_RESULT_SET="500" \
   -- "C:\path\to\MssqlMcp.exe"
 ```
 
@@ -158,7 +160,7 @@ The `ReadData` tool validates all queries to prevent SQL injection and destructi
 - Blocked keywords: `DELETE`, `DROP`, `UPDATE`, `INSERT`, `EXEC`, `TRUNCATE`, etc.
 - Blocked patterns: `SELECT INTO`, stored procedures (`sp_`, `xp_`), `OPENROWSET`, `WAITFOR`, etc.
 - Maximum query length: 10,000 characters
-- Maximum result set: 10,000 records
+- Maximum result set: 100 records (configurable via `MAX_RESULT_SET`)
 
 # Troubleshooting
 
