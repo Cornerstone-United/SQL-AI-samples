@@ -156,7 +156,7 @@ Set `READONLY=true` to prevent any data modification. When enabled:
 
 ## ReadData Query Validation
 The `ReadData` tool validates all queries to prevent SQL injection and destructive operations:
-- Queries must start with `SELECT`
+- Queries must start with `SELECT` or `WITH` (for CTEs/Common Table Expressions)
 - Blocked keywords: `DELETE`, `DROP`, `UPDATE`, `INSERT`, `EXEC`, `TRUNCATE`, etc.
 - Blocked patterns: `SELECT INTO`, stored procedures (`sp_`, `xp_`), `OPENROWSET`, `WAITFOR`, etc.
 - Maximum query length: 10,000 characters

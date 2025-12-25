@@ -187,10 +187,11 @@ public static partial class SqlQueryValidator
             return (false, "Query cannot be empty after removing comments");
         }
 
-        // Must start with SELECT
-        if (!cleanQuery.StartsWith("SELECT", StringComparison.OrdinalIgnoreCase))
+        // Must start with SELECT or WITH (for CTEs)
+        if (!cleanQuery.StartsWith("SELECT", StringComparison.OrdinalIgnoreCase) &&
+            !cleanQuery.StartsWith("WITH", StringComparison.OrdinalIgnoreCase))
         {
-            return (false, "Query must start with SELECT for security reasons");
+            return (false, "Query must start with SELECT or WITH (for CTEs) for security reasons");
         }
 
         // Check for dangerous keywords using word boundaries

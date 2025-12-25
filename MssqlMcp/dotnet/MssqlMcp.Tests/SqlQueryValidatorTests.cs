@@ -13,6 +13,8 @@ public class SqlQueryValidatorTests
     [InlineData("SELECT COUNT(*) FROM Orders")]
     [InlineData("SELECT a.Id, b.Name FROM TableA a JOIN TableB b ON a.Id = b.AId")]
     [InlineData("SELECT TOP 10 * FROM Customers ORDER BY Name")]
+    [InlineData("WITH CTE AS (SELECT * FROM Users) SELECT * FROM CTE")]
+    [InlineData("WITH First AS (SELECT Id FROM A), Second AS (SELECT Id FROM B) SELECT * FROM First JOIN Second ON First.Id = Second.Id")]
     public void ValidateQuery_AcceptsValidSelectQueries(string query)
     {
         var (isValid, error) = SqlQueryValidator.ValidateQuery(query);

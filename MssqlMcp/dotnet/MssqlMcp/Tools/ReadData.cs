@@ -14,9 +14,9 @@ public partial class Tools
         ReadOnly = true,
         Idempotent = true,
         Destructive = false),
-        Description("Executes a SELECT query on an SQL Database table. The query must start with SELECT and cannot contain any destructive SQL operations for security reasons.")]
+        Description("Executes a SELECT query on an SQL Database table. The query must start with SELECT (or WITH for CTEs) and cannot contain any destructive SQL operations for security reasons.")]
     public async Task<DbOperationResult> ReadData(
-        [Description("SQL SELECT query to execute (must start with SELECT and cannot contain destructive operations)")] string sql)
+        [Description("SQL SELECT query to execute (must start with SELECT or WITH for CTEs, and cannot contain destructive operations)")] string sql)
     {
         // Validate the query for security issues
         var (isValid, validationError) = SqlQueryValidator.ValidateQuery(sql);
