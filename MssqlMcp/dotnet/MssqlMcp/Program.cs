@@ -31,10 +31,11 @@ internal class Program
         _ = builder.Services.AddSingleton<Tools>();
 
         // Register MCP server and tools (instance-based)
+        // Use filtered registration to exclude write tools when READONLY=true
         _ = builder.Services
             .AddMcpServer()
             .WithStdioServerTransport()
-            .WithToolsFromAssembly();
+            .WithToolsFromAssemblyFiltered(readOnlyMode: Tools.IsReadOnly);
 
         // Build the host
         var host = builder.Build();

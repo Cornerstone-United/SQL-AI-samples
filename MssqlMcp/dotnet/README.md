@@ -135,7 +135,7 @@ Add a new MCP Server with the following settings:
 ```
 ---
 
-Save the file, start a new Chat, you'll see the "Tools" icon, it should list 7 MSSQL MCP tools.
+Save the file, start a new Chat, you'll see the "Tools" icon. It should list 7 MSSQL MCP tools when `READONLY=false`, or 3 tools (ListTables, DescribeTable, ReadData) when `READONLY=true`.
 
 4. Claude Code: **Add MCP Server via CLI**
 
@@ -151,8 +151,9 @@ claude mcp add --transport stdio "MSSQL MCP" \
 
 ## READONLY Mode
 Set `READONLY=true` to prevent any data modification. When enabled:
-- `CreateTable`, `DropTable`, `InsertData`, and `UpdateData` tools return an error
-- Only `ListTables`, `DescribeTable`, and `ReadData` tools function normally
+- `CreateTable`, `DropTable`, `InsertData`, and `UpdateData` tools are **not advertised** to clients
+- Only `ListTables`, `DescribeTable`, and `ReadData` tools are registered with the MCP server
+- This reduces context token usage for AI clients by not exposing unavailable tools
 
 ## ReadData Query Validation
 The `ReadData` tool validates all queries to prevent SQL injection and destructive operations:
