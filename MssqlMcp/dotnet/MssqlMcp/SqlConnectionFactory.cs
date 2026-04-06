@@ -22,7 +22,7 @@ public class SqlConnectionFactory : ISqlConnectionFactory
         var connectionString = Environment.GetEnvironmentVariable("CONNECTION_STRING");
 
         return string.IsNullOrEmpty(connectionString)
-            ? throw new InvalidOperationException("Connection string is not set in the environment variable 'CONNECTION_STRING'.\n\nHINT: Have a local SQL Server, with a database called 'test', from console, run `SET CONNECTION_STRING=Server=.;Database=test;Trusted_Connection=True;TrustServerCertificate=True` and the load the .sln file")
+            ? throw new InvalidOperationException("Connection string is not set in the environment variable 'CONNECTION_STRING'.\n\nHINT: From console, run `SET CONNECTION_STRING=Server=SQL-DEV02.CSU.LOCAL;Database=warranty_us;Trusted_Connection=True;TrustServerCertificate=True` and then load the .sln file")
             : connectionString;
     }
 }
